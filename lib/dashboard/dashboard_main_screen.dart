@@ -1,8 +1,12 @@
+// dashboard_main_screen.dart
+import 'package:cef_dashboard/dashboard/blog_widget.dart';
+import 'package:cef_dashboard/dashboard/welcome_widget.dart';
 import 'package:flutter/material.dart';
 
 import 'class_details_widget.dart';
 import 'my_schedule_widget.dart';
 import 'overview_details_widget.dart';
+import 'enroll_courses_widget.dart';
 
 class DashboardMainScreen extends StatefulWidget {
   const DashboardMainScreen({super.key});
@@ -189,27 +193,62 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
           ),
           drawer: drawerWidget,
           body: SingleChildScrollView(
-
             child: LayoutBuilder(
               builder: (context, constraints) {
                 if (constraints.maxWidth > 600) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  // Web view layout
+                  return Column(
                     children: [
-                      Expanded(child: ClassDetailsWidget()),
-                      Expanded(child: OverviewDetailsWidget()),
-                      Expanded(child: MyScheduleWidget()),
+                      const WelcomeBannerWidget(), // Add the widget here below the AppBar
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min, // Use min to avoid unbounded height
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(child: ClassDetailsWidget()),
+                                    Expanded(child: OverviewDetailsWidget()),
+                                  ],
+                                ),
+                                EnrollCoursesWidget(),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min, // Use min to avoid unbounded height
+                              children: [
+                                Flexible(
+                                  fit: FlexFit.loose, // Allow MyScheduleWidget to size itself
+                                  child: MyScheduleWidget(),
+                                ),
+                                BlogWidget(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   );
                 } else {
+                  // Mobile/Android view layout (unchanged)
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      const WelcomeBannerWidget(),
                       SizedBox(height: 10),
                       ClassDetailsWidget(),
                       OverviewDetailsWidget(),
                       MyScheduleWidget(),
+                      EnrollCoursesWidget(),
+                      BlogWidget(),
                     ],
                   );
                 }

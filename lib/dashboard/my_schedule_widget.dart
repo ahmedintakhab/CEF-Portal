@@ -1,3 +1,4 @@
+// my_schedule_widget.dart
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -14,8 +15,8 @@ class _MyScheduleWidgetState extends State<MyScheduleWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(10.0),
-      padding: EdgeInsets.all(16.0),
+      margin: EdgeInsets.all(10.0), // Reduced margin
+      padding: EdgeInsets.all(16.0), // Reduced padding
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -34,7 +35,7 @@ class _MyScheduleWidgetState extends State<MyScheduleWidget> {
           Text(
             'My Schedule',
             style: TextStyle(
-              fontSize: 18.0,
+              fontSize: 16.0, // Reduced font size
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -42,81 +43,85 @@ class _MyScheduleWidgetState extends State<MyScheduleWidget> {
             thickness: 1.0,
             color: Colors.grey,
           ),
-          TableCalendar(
-            firstDay: DateTime.utc(2025, 7, 28),
-            lastDay: DateTime.utc(2025, 8, 31),
-            focusedDay: _focusedDay,
-            calendarFormat: _calendarFormat,
-            selectedDayPredicate: (day) {
-              return isSameDay(_selectedDay, day);
-            },
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            onFormatChanged: (format) {
-              if (_calendarFormat != format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
-              }
-            },
-            onPageChanged: (focusedDay) {
-              _focusedDay = focusedDay;
-            },
-            calendarStyle: CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.5),
-                shape: BoxShape.circle,
-              ),
-              selectedDecoration: BoxDecoration(
-                color: Colors.green,
-                shape: BoxShape.circle,
-              ),
-              markerDecoration: BoxDecoration(
-                color: Colors.green,
-                shape: BoxShape.circle,
-              ),
-            ),
-            headerStyle: HeaderStyle(
-              formatButtonVisible: false,
-              leftChevronIcon: Icon(Icons.chevron_left),
-              rightChevronIcon: Icon(Icons.chevron_right),
-            ),
-            availableCalendarFormats: const {
-              CalendarFormat.month: 'Month',
-            },
-            calendarBuilders: CalendarBuilders(
-              defaultBuilder: (context, date, events) {
-                return Container(
-                  margin: EdgeInsets.all(4.0),
-                  alignment: Alignment.center,
-                  height: 20.0, // Reduced height
-                  child: Text(
-                    date.day.toString(),
-                    style: TextStyle(fontSize: 12.0),
-                  ),
-                );
+          SizedBox(
+            height: 390, // Constrain the calendar height
+            child: TableCalendar(
+              firstDay: DateTime.utc(2025, 7, 28),
+              lastDay: DateTime.utc(2025, 8, 31),
+              focusedDay: _focusedDay,
+              calendarFormat: _calendarFormat,
+              selectedDayPredicate: (day) {
+                return isSameDay(_selectedDay, day);
               },
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              },
+              onFormatChanged: (format) {
+                if (_calendarFormat != format) {
+                  setState(() {
+                    _calendarFormat = format;
+                  });
+                }
+              },
+              onPageChanged: (focusedDay) {
+                _focusedDay = focusedDay;
+              },
+              calendarStyle: CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                markerDecoration: BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                cellMargin: EdgeInsets.all(6.0), // Reduced cell margin
+              ),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                leftChevronIcon: Icon(Icons.chevron_left, size: 16), // Reduced icon size
+                rightChevronIcon: Icon(Icons.chevron_right, size: 16), // Reduced icon size
+              ),
+              availableCalendarFormats: const {
+                CalendarFormat.month: 'Month',
+              },
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, date, events) {
+                  return Container(
+                    margin: EdgeInsets.all(3.0), // Reduced margin
+                    alignment: Alignment.center,
+                    height: 15.0, // Reduced height
+                    child: Text(
+                      date.day.toString(),
+                      style: TextStyle(fontSize: 10.0), // Reduced font size
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 5), // Reduced spacing
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check, color: Colors.green),
+              Icon(Icons.check, color: Colors.green, size: 12), // Reduced icon size
               SizedBox(width: 2),
-              Text('Attend Classes',style: TextStyle(fontSize: 9)),
-              SizedBox(width: 10),
-              Icon(Icons.close, color: Colors.red),
+              Text('Attend Classes', style: TextStyle(fontSize: 8)), // Reduced font size
+              SizedBox(width: 5), // Reduced spacing
+              Icon(Icons.close, color: Colors.red, size: 12), // Reduced icon size
               SizedBox(width: 2),
-              Text('Missed Classes',style: TextStyle(fontSize: 9)),
-              SizedBox(width: 8),
-              Icon(Icons.circle, color: Colors.blue, size: 10),
+              Text('Missed Classes', style: TextStyle(fontSize: 8)), // Reduced font size
+              SizedBox(width: 5), // Reduced spacing
+              Icon(Icons.circle, color: Colors.blue, size: 8), // Reduced icon size
               SizedBox(width: 2),
-              Text('Upcoming Classes',style: TextStyle(fontSize: 9),),
+              Text('Upcoming Classes', style: TextStyle(fontSize: 8)), // Reduced font size
             ],
           ),
         ],

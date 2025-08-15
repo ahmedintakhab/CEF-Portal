@@ -25,7 +25,7 @@ class OverviewDetailsWidget extends StatelessWidget {
           Text(
             'Overview',
             style: TextStyle(
-              fontSize: 18.0,
+              fontSize: 16.0,
               fontWeight: FontWeight.bold,
             ),
           ),
