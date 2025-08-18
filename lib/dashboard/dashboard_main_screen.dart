@@ -2,7 +2,9 @@
 import 'package:cef_dashboard/dashboard/blog_widget.dart';
 import 'package:cef_dashboard/dashboard/welcome_widget.dart';
 import 'package:flutter/material.dart';
-
+import '../my courses/my_courses_screen.dart';
+import '../my courses/self_learning_courses.dart'; // Import CourseModel
+import '../my courses/course_details_screen.dart'; // Import CourseDetailsScreen
 import 'class_details_widget.dart';
 import 'my_schedule_widget.dart';
 import 'overview_details_widget.dart';
@@ -18,6 +20,8 @@ class DashboardMainScreen extends StatefulWidget {
 class _DashboardMainScreenState extends State<DashboardMainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
+  int _selectedIndex = 1;
+  CourseModel? _selectedCourse; // Track selected course
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +47,69 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                   ],
                 ),
               ),
-              ListTile(title: Text('HOME'), onTap: () {}),
-              ListTile(title: Text('DASHBOARD'), onTap: () {}),
-              ListTile(title: Text('MY COURSES'), onTap: () {}),
-              ListTile(title: Text('CLASS SCHEDULE'), onTap: () {}),
-              ListTile(title: Text('CLASS HISTORY'), onTap: () {}),
-              ListTile(title: Text('MY PRODUCTS'), onTap: () {}),
-              ListTile(title: Text('BILLING'), onTap: () {}),
+              ListTile(
+                  title: Text('HOME'),
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 0;
+                      _selectedCourse = null; // Reset selected course
+                    });
+                    Navigator.pop(context);
+                  }),
+              ListTile(
+                  title: Text('DASHBOARD'),
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 1;
+                      _selectedCourse = null; // Reset selected course
+                    });
+                    Navigator.pop(context);
+                  }),
+              ListTile(
+                  title: Text('MY COURSES'),
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 2;
+                      _selectedCourse = null; // Reset selected course
+                    });
+                    Navigator.pop(context);
+                  }),
+              ListTile(
+                  title: Text('CLASS SCHEDULE'),
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 3;
+                      _selectedCourse = null; // Reset selected course
+                    });
+                    Navigator.pop(context);
+                  }),
+              ListTile(
+                  title: Text('CLASS HISTORY'),
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 4;
+                      _selectedCourse = null; // Reset selected course
+                    });
+                    Navigator.pop(context);
+                  }),
+              ListTile(
+                  title: Text('MY PRODUCTS'),
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 5;
+                      _selectedCourse = null; // Reset selected course
+                    });
+                    Navigator.pop(context);
+                  }),
+              ListTile(
+                  title: Text('BILLING'),
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 6;
+                      _selectedCourse = null; // Reset selected course
+                    });
+                    Navigator.pop(context);
+                  }),
               ListTile(
                 leading: Icon(Icons.person),
                 title: Text('Profile'),
@@ -81,13 +141,62 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                   SizedBox(width: 20),
                   Row(
                     children: [
-                      TextButton(onPressed: () {}, child: Text('HOME')),
-                      TextButton(onPressed: () {}, child: Text('DASHBOARD')),
-                      TextButton(onPressed: () {}, child: Text('MY COURSES')),
-                      TextButton(onPressed: () {}, child: Text('CLASS SCHEDULE')),
-                      TextButton(onPressed: () {}, child: Text('CLASS HISTORY')),
-                      TextButton(onPressed: () {}, child: Text('MY PRODUCTS')),
-                      TextButton(onPressed: () {}, child: Text('BILLING')),
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 0;
+                              _selectedCourse = null; // Reset selected course
+                            });
+                          },
+                          child: Text('HOME')),
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 1;
+                              _selectedCourse = null; // Reset selected course
+                            });
+                          },
+                          child: Text('DASHBOARD')),
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 2;
+                              _selectedCourse = null; // Reset selected course
+                            });
+                          },
+                          child: Text('MY COURSES')),
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 3;
+                              _selectedCourse = null; // Reset selected course
+                            });
+                          },
+                          child: Text('CLASS SCHEDULE')),
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 4;
+                              _selectedCourse = null; // Reset selected course
+                            });
+                          },
+                          child: Text('CLASS HISTORY')),
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 5;
+                              _selectedCourse = null; // Reset selected course
+                            });
+                          },
+                          child: Text('MY PRODUCTS')),
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 6;
+                              _selectedCourse = null; // Reset selected course
+                            });
+                          },
+                          child: Text('BILLING')),
                     ],
                   ),
                   Expanded(
@@ -192,14 +301,31 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
             ),
           ),
           drawer: drawerWidget,
-          body: SingleChildScrollView(
+          body: _selectedIndex == 2
+              ? _selectedCourse != null
+              ? CourseDetailsScreen(
+            course: _selectedCourse!,
+            onBack: () {
+              setState(() {
+                _selectedCourse = null; // Return to MyCoursesWidget
+              });
+            },
+          )
+              : MyCoursesWidget(
+            onCourseSelected: (CourseModel course) {
+              setState(() {
+                _selectedCourse = course; // Set selected course
+              });
+            },
+          )
+              : SingleChildScrollView(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 if (constraints.maxWidth > 600) {
                   // Web view layout
                   return Column(
                     children: [
-                      const WelcomeBannerWidget(), // Add the widget here below the AppBar
+                      const WelcomeBannerWidget(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +334,7 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                             flex: 2,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min, // Use min to avoid unbounded height
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Row(
                                   children: [
@@ -223,10 +349,10 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min, // Use min to avoid unbounded height
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Flexible(
-                                  fit: FlexFit.loose, // Allow MyScheduleWidget to size itself
+                                  fit: FlexFit.loose,
                                   child: MyScheduleWidget(),
                                 ),
                                 BlogWidget(),
@@ -238,7 +364,7 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                     ],
                   );
                 } else {
-                  // Mobile/Android view layout (unchanged)
+                  // Mobile view layout
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
