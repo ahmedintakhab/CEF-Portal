@@ -1,4 +1,7 @@
+import 'package:cef_dashboard/my%20courses/self_learning_courses.dart';
 import 'package:flutter/material.dart';
+
+import 'course_details_screen.dart';
 
 class LiveCoursesWidget extends StatefulWidget {
   const LiveCoursesWidget({super.key});
@@ -146,7 +149,7 @@ class _LiveCoursesWidgetState extends State<LiveCoursesWidget> {
                 ),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => _onLiveCourseNameTap(course),
+                    onTap: () => _onLiveCourseNameTap(context,course),
                     child: Text(course.name,
                         style: const TextStyle(
                             color: Colors.blue,
@@ -211,7 +214,7 @@ class _LiveCoursesWidgetState extends State<LiveCoursesWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildMobileDetailRowClickable('Course Name:', course.name,
-                    onTap: () => _onLiveCourseNameTap(course)),
+                    onTap: () => _onLiveCourseNameTap(context,course)),
                 const SizedBox(height: 12),
                 _buildMobileDetailRow('Price:', course.price),
                 const SizedBox(height: 12),
@@ -301,8 +304,24 @@ class _LiveCoursesWidgetState extends State<LiveCoursesWidget> {
     );
   }
 
-  void _onLiveCourseNameTap(LiveCourseModel course) {
-    print('Live course tapped: ${course.name}');
+  void _onLiveCourseNameTap(BuildContext context, LiveCourseModel course) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CourseDetailsScreen(
+          course: CourseModel(
+            name: course.name,
+            lessons: course.price,
+            price: course.price,
+            orderId: '', // Default value since not available in LiveCourseModel
+            validity: '', // Default value since not available in LiveCourseModel
+            progress: 0.0, // Default value since not available in LiveCourseModel
+            status: '', // Default value since not available in LiveCourseModel
+          ),
+          onBack: () => Navigator.pop(context),
+        ),
+      ),
+    );
   }
 }
 
