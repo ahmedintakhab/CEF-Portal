@@ -1,16 +1,21 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:cef_dashboard/my%20courses/quiz_screen.dart';
 import 'package:cef_dashboard/my%20courses/reviews_screen.dart';
 import 'package:cef_dashboard/my%20courses/self_learning_courses.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'assignment_screen.dart';
 import 'discussion_screen.dart';
 import 'my_class_screen.dart';
 import 'notice_screen.dart';
 import 'overview_screen.dart';
+import 'content_screen.dart'; // Import the ContentScreen
 
 class CourseDetailsScreen extends StatefulWidget {
   final CourseModel course;
@@ -28,25 +33,50 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
   late VideoPlayerController? _videoController;
   ChewieController? _chewieController;
   bool _isWebVideoReady = false;
-  bool _useIframe = false; // Set to false for offline asset videos
+  bool _useIframe = false;
+
+  // PDF related variables
+  bool _isPdfMode = false;
+  String? _currentPdfPath;
+  List<String> _availablePdfs = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 7, vsync: this);
     _initializeVideo();
+    _loadAvailablePdfs();
+  }
+
+  Future<void> _loadAvailablePdfs() async {
+    try {
+      // Load PDF files from assets/pdf/ directory
+      final manifestContent = await rootBundle.loadString('AssetManifest.json');
+      final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+
+      final pdfFiles = manifestMap.keys
+          .where((String key) => key.startsWith('assets/pdf/') && key.endsWith('.pdf'))
+          .map((String key) => key.split('/').last)
+          .toList();
+
+      setState(() {
+        _availablePdfs = pdfFiles;
+      });
+    } catch (e) {
+      // Fallback to hardcoded list if AssetManifest reading fails
+      setState(() {
+        _availablePdfs = ['flutter_basics.pdf', 'Introduction.pdf', 'Lesson1.pdf', 'Lesson2.pdf'];
+      });
+    }
   }
 
   Future<void> _initializeVideo() async {
     if (kIsWeb && _useIframe) {
-      // Use iframe for web (online only)
       setState(() => _isWebVideoReady = true);
     } else {
-      // Use asset video for both mobile and web (offline support)
       _videoController = VideoPlayerController.asset('assets/videos/cef.mp4');
       await _videoController!.initialize();
 
-      // Initialize Chewie for enhanced controls
       _chewieController = ChewieController(
         videoPlayerController: _videoController!,
         autoPlay: false,
@@ -71,6 +101,42 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
     }
   }
 
+  void _openPdf(String pdfName) {
+    // For web and desktop, open PDF inline
+    // For mobile, navigate to ContentScreen
+    final bool shouldOpenInline = kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux));
+
+    print('Should open inline: $shouldOpenInline');
+    print('PDF to open: assets/pdf/$pdfName');
+
+    if (shouldOpenInline) {
+      print('Opening PDF inline');
+      setState(() {
+        _isPdfMode = true;
+        _currentPdfPath = 'assets/pdf/$pdfName';
+      });
+    } else {
+      print('Navigating to ContentScreen');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ContentScreen(
+              pdfPath: 'assets/pdf/$pdfName',
+              pdfName: pdfName,
+            ),
+          ),
+        );
+      });
+    }
+  }
+
+  void _closePdf() {
+    setState(() {
+      _isPdfMode = false;
+      _currentPdfPath = null;
+    });
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -89,14 +155,26 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            if (widget.onBack != null) {
+            if (_isPdfMode && kIsWeb) {
+              // If in PDF mode on Web, close PDF instead of going back
+              _closePdf();
+            } else if (widget.onBack != null) {
               widget.onBack!();
             } else {
               Navigator.pop(context);
             }
           },
         ),
-        title: const Text('Course Details'),
+        title: _isPdfMode && kIsWeb
+            ? Text(_currentPdfPath?.split('/').last ?? 'PDF Viewer')
+            : const Text('Course Details'),
+        actions: (_isPdfMode && kIsWeb) ? [
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: _closePdf,
+            tooltip: 'Close PDF',
+          ),
+        ] : null,
       ),
       body: SingleChildScrollView(
         child: isWebLayout ? _buildWebLayout() : _buildMobileLayout(),
@@ -110,14 +188,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left column - Video and TabBar content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildVideoPlayer(),
+                _buildMediaPlayer(),
                 const SizedBox(height: 16),
-                // Course name and lessons
                 Text(
                   widget.course.name,
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -128,7 +204,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
                   style: const TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 const SizedBox(height: 16),
-                // TabBar with restricted width
                 TabBar(
                   controller: _tabController,
                   isScrollable: true,
@@ -145,7 +220,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
                     Tab(text: 'Reviews'),
                   ],
                 ),
-                // TabBarView
                 SizedBox(
                   height: 400,
                   child: TabBarView(
@@ -165,7 +239,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
             ),
           ),
           const SizedBox(width: 16),
-          // Right column - Course Content
           _buildCourseContentSection(),
         ],
       ),
@@ -176,18 +249,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Video and Course Content section
         Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
           child: Column(
             children: [
-              _buildVideoPlayer(),
+              _buildMediaPlayer(),
               const SizedBox(height: 16),
               _buildCourseContentSection(),
             ],
           ),
         ),
-        // Course name and lessons
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
@@ -202,7 +273,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ),
-        // TabBar
         TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -219,7 +289,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
             Tab(text: 'Reviews'),
           ],
         ),
-        // TabBarView
         SizedBox(
           height: 400,
           child: TabBarView(
@@ -236,6 +305,36 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildMediaPlayer() {
+    if (_isPdfMode && _currentPdfPath != null) {
+      return _buildPdfViewer();
+    } else {
+      return _buildVideoPlayer();
+    }
+  }
+
+  Widget _buildPdfViewer() {
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: SfPdfViewer.asset(
+            _currentPdfPath!,
+            enableDoubleTapZooming: true,
+            enableTextSelection: true,
+            canShowScrollHead: true,
+            canShowScrollStatus: true,
+          ),
+        ),
+      ),
     );
   }
 
@@ -285,7 +384,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
   }
 
   Widget _buildCourseContentSection() {
-    final List<String> pdfs = ['Introduction.pdf', 'Lesson1.pdf', 'Lesson2.pdf'];
     final List<String> slides = ['SlideDeck1.pptx', 'SlideDeck2.pptx'];
 
     return Container(
@@ -303,31 +401,49 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
             'Course Content',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          // const SizedBox(height: 8),
-          // Text(
-          //   widget.course.name,
-          //   style: const TextStyle(fontSize: 14),
-          //   overflow: TextOverflow.ellipsis,
-          // ),
-          // const SizedBox(height: 6),
           ExpansionTile(
             title: const Text('PDFs'),
-            children: pdfs.map((pdf) => ListTile(
+            children: _availablePdfs.map((pdf) => ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
               title: Text(pdf),
-              onTap: () {
-                // Handle PDF tap (e.g., open file)
-              },
+              trailing: _isPdfMode && _currentPdfPath == 'assets/pdf/$pdf'
+                  ? const Icon(Icons.visibility, color: Colors.blue)
+                  : null,
+              onTap: () => _openPdf(pdf),
             )).toList(),
           ),
           ExpansionTile(
             title: const Text('Slide Documents'),
             children: slides.map((slide) => ListTile(
+              leading: const Icon(Icons.slideshow, color: Colors.orange),
               title: Text(slide),
               onTap: () {
                 // Handle slide tap (e.g., open file)
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Opening $slide')),
+                );
               },
             )).toList(),
           ),
+          if (_isPdfMode && kIsWeb)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _closePdf,
+                      icon: const Icon(Icons.video_library),
+                      label: const Text('Back to Video'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
