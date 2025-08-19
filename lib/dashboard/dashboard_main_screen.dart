@@ -23,6 +23,24 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
   int _selectedIndex = 1;
   CourseModel? _selectedCourse; // Track selected course
 
+  Widget _buildWebAppBarItem(String text, int index) {
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          _selectedIndex = index;
+          _selectedCourse = null;
+        });
+      },
+      style: TextButton.styleFrom(
+        foregroundColor: _selectedIndex == index ? Colors.blue[800] : Colors.black,
+        textStyle: TextStyle(
+          fontWeight: _selectedIndex == index ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      child: Text(text),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -141,62 +159,13 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                   SizedBox(width: 20),
                   Row(
                     children: [
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedIndex = 0;
-                              _selectedCourse = null; // Reset selected course
-                            });
-                          },
-                          child: Text('HOME')),
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedIndex = 1;
-                              _selectedCourse = null; // Reset selected course
-                            });
-                          },
-                          child: Text('DASHBOARD')),
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedIndex = 2;
-                              _selectedCourse = null; // Reset selected course
-                            });
-                          },
-                          child: Text('MY COURSES')),
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedIndex = 3;
-                              _selectedCourse = null; // Reset selected course
-                            });
-                          },
-                          child: Text('CLASS SCHEDULE')),
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedIndex = 4;
-                              _selectedCourse = null; // Reset selected course
-                            });
-                          },
-                          child: Text('CLASS HISTORY')),
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedIndex = 5;
-                              _selectedCourse = null; // Reset selected course
-                            });
-                          },
-                          child: Text('MY PRODUCTS')),
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedIndex = 6;
-                              _selectedCourse = null; // Reset selected course
-                            });
-                          },
-                          child: Text('BILLING')),
+                      _buildWebAppBarItem('HOME', 0),
+                      _buildWebAppBarItem('DASHBOARD', 1),
+                      _buildWebAppBarItem('MY COURSES', 2),
+                      _buildWebAppBarItem('CLASS SCHEDULE', 3),
+                      _buildWebAppBarItem('CLASS HISTORY', 4),
+                      _buildWebAppBarItem('MY PRODUCTS', 5),
+                      _buildWebAppBarItem('BILLING', 6),
                     ],
                   ),
                   Expanded(
@@ -317,7 +286,14 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                 _selectedCourse = course; // Set selected course
               });
             },
+            onBackPressed: () {
+              setState(() {
+                _selectedIndex = 1; // Navigate back to Dashboard (index 1)
+                _selectedCourse = null;
+              });
+            },
           )
+
               : SingleChildScrollView(
             child: LayoutBuilder(
               builder: (context, constraints) {

@@ -145,23 +145,26 @@ class SelfLearningCoursesWidget extends StatelessWidget {
           Expanded(flex: 1, child: Text(course.validity)),
           Expanded(
             flex: 1,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                LinearProgressIndicator(
-                  value: course.progress / 100,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-                ),
-                const SizedBox(height: 4),
-                Text('${course.progress.toStringAsFixed(2)}%', style: const TextStyle(fontSize: 12)),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LinearProgressIndicator(
+                    value: course.progress / 100,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('${course.progress.toStringAsFixed(2)}%', style: const TextStyle(fontSize: 12)),
+                ],
+              ),
             ),
           ),
           Expanded(
             flex: 1,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               decoration: BoxDecoration(color: Colors.blue[100], borderRadius: BorderRadius.circular(4)),
               child: Text(
                 course.status,
