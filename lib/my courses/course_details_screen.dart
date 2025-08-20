@@ -11,7 +11,7 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'assignment_screen.dart';
-import 'discussion_screen.dart';
+import '../discussion/discussion_screen.dart';
 import 'my_class_screen.dart';
 import 'notice_screen.dart';
 import 'overview_screen.dart';
@@ -230,7 +230,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
                       MyClassScreen(courseName: widget.course.name),
                       AssignmentsScreen(courseName: widget.course.name),
                       QuizzesScreen(courseName: widget.course.name),
-                      DiscussionScreen(courseName: widget.course.name),
+                      DiscussionPage(),
                       ReviewsScreen(),
                     ],
                   ),
@@ -299,7 +299,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
               MyClassScreen(courseName: widget.course.name),
               AssignmentsScreen(courseName: widget.course.name),
               QuizzesScreen(courseName: widget.course.name),
-              DiscussionScreen(courseName: widget.course.name),
+              DiscussionPage(),
               ReviewsScreen(),
             ],
           ),

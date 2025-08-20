@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-class DiscussionScreen extends StatelessWidget {
-  final String courseName;
-
-  const DiscussionScreen({super.key, required this.courseName});
+class CurrentClassScreen extends StatelessWidget {
+  const CurrentClassScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,25 +31,27 @@ class DiscussionScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.forum, color: Colors.indigo, size: 20),
+                    Icon(Icons.class_, color: Colors.purple, size: 20),
                     const SizedBox(width: 8),
                     const Text(
-                      'Discussion',
+                      'My Class',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.indigo,
+                        color: Colors.purple,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Discussion content for $courseName will be displayed here.',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                    height: 1.5,
+                const Center(
+                  child: Text(
+                    'This is Current Screen',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ],
