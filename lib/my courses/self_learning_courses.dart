@@ -10,6 +10,8 @@ class CourseModel {
   final String validity;
   final double progress;
   final String status;
+  final String? imageUrl;
+
 
   CourseModel({
     required this.name,
@@ -19,6 +21,8 @@ class CourseModel {
     required this.validity,
     required this.progress,
     required this.status,
+    this.imageUrl,
+
   });
 }
 

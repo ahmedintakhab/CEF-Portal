@@ -2,6 +2,7 @@
 import 'package:cef_dashboard/dashboard/blog_widget.dart';
 import 'package:cef_dashboard/dashboard/welcome_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../my courses/my_courses_screen.dart';
 import '../my courses/self_learning_courses.dart'; // Import CourseModel
 import '../my courses/course_details_screen.dart'; // Import CourseDetailsScreen
@@ -26,10 +27,14 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
   Widget _buildWebAppBarItem(String text, int index) {
     return TextButton(
       onPressed: () {
-        setState(() {
-          _selectedIndex = index;
-          _selectedCourse = null;
-        });
+        if (index == 0) { // HOME index
+          _launchURL('https://cefonlineacademy.com/');
+        } else {
+          setState(() {
+            _selectedIndex = index;
+            _selectedCourse = null;
+          });
+        }
       },
       style: TextButton.styleFrom(
         foregroundColor: _selectedIndex == index ? Colors.blue[800] : Colors.black,
@@ -41,11 +46,20 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
     );
   }
 
+  // Method to launch URL
+  Future<void> _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        Widget drawerWidget = constraints.maxWidth <= 600
+        Widget? drawerWidget = constraints.maxWidth <= 600
             ? Drawer(
           child: ListView(
             padding: EdgeInsets.zero,
@@ -141,7 +155,7 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
             ],
           ),
         )
-            : SizedBox.shrink();
+            : null;
 
         return Scaffold(
           key: _scaffoldKey,
@@ -154,7 +168,7 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Image.asset('assets/images/cef.png', height: 40), // Replace with your logo asset
+                    child: Image.asset('assets/images/cef_logo.png', height: 50), // Replace with your logo asset
                   ),
                   SizedBox(width: 20),
                   Row(
@@ -173,8 +187,8 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Container(
-                          width: 150,
-                          height: 45,
+                          width: 170,
+                          height: 40,
                           child: TextField(
                             controller: _searchController,
                             decoration: InputDecoration(
@@ -229,7 +243,7 @@ class _DashboardMainScreenState extends State<DashboardMainScreen> {
               leading: constraints.maxWidth <= 600
                   ? Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Image.asset('assets/images/cef.png', height: 40), // Replace with your logo asset
+                child: Image.asset('assets/images/cef.png', height: 60), // Replace with your logo asset
               )
                   : null,
               actions: constraints.maxWidth <= 600

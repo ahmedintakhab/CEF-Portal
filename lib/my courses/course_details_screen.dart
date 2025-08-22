@@ -15,7 +15,59 @@ import '../discussion/discussion_screen.dart';
 import 'my_class_screen.dart';
 import 'notice_screen.dart';
 import 'overview_screen.dart';
-import 'content_screen.dart'; // Import the ContentScreen
+import 'content_screen.dart';
+
+// Full-screen PDF viewer page
+class FullScreenPdfViewer extends StatelessWidget {
+  final String? pdfPath;
+  final String? imagePath;
+  final String pdfName;
+
+  const FullScreenPdfViewer({super.key, this.pdfPath, this.imagePath, required this.pdfName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(pdfName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.fullscreen_exit,color: Colors.black,),
+            onPressed: () {
+              // Reset system UI and orientation
+              SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+              SystemChrome.setPreferredOrientations([
+                DeviceOrientation.portraitUp,
+                DeviceOrientation.portraitDown,
+              ]);
+              Navigator.pop(context);
+            },
+            tooltip: 'Exit Full Screen',
+          ),
+        ],
+      ),
+      body: imagePath != null
+          ? Center(
+        child: Image.asset(
+          imagePath!,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return const Center(
+              child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
+            );
+          },
+        ),
+      )
+          : SfPdfViewer.asset(
+        pdfPath!,
+        enableDoubleTapZooming: true,
+        enableTextSelection: true,
+        canShowScrollHead: true,
+        canShowScrollStatus: true,
+      ),
+    );
+  }
+}
 
 class CourseDetailsScreen extends StatefulWidget {
   final CourseModel course;
@@ -46,11 +98,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
     _tabController = TabController(length: 7, vsync: this);
     _initializeVideo();
     _loadAvailablePdfs();
+    if (widget.course.imageUrl == null) {
+      _initializeVideo();
+    }
   }
 
   Future<void> _loadAvailablePdfs() async {
     try {
-      // Load PDF files from assets/pdf/ directory
       final manifestContent = await rootBundle.loadString('AssetManifest.json');
       final Map<String, dynamic> manifestMap = json.decode(manifestContent);
 
@@ -63,7 +117,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
         _availablePdfs = pdfFiles;
       });
     } catch (e) {
-      // Fallback to hardcoded list if AssetManifest reading fails
       setState(() {
         _availablePdfs = ['flutter_basics.pdf', 'Introduction.pdf', 'Lesson1.pdf', 'Lesson2.pdf'];
       });
@@ -102,8 +155,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
   }
 
   void _openPdf(String pdfName) {
-    // For web and desktop, open PDF inline
-    // For mobile, navigate to ContentScreen
     final bool shouldOpenInline = kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux));
 
     print('Should open inline: $shouldOpenInline');
@@ -137,11 +188,37 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
     });
   }
 
+  void _toggleFullScreen(String path, String name, bool isImage) {
+    // Set system UI to immersive and landscape orientation
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    // Navigate to full-screen viewer
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => FullScreenPdfViewer(
+          pdfPath: isImage ? null : path,
+          imagePath: isImage ? path : null,
+          pdfName: name,
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
     _videoController?.dispose();
     _chewieController?.dispose();
+    // Reset system UI and orientation
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     super.dispose();
   }
 
@@ -156,7 +233,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             if (_isPdfMode && kIsWeb) {
-              // If in PDF mode on Web, close PDF instead of going back
               _closePdf();
             } else if (widget.onBack != null) {
               widget.onBack!();
@@ -309,11 +385,43 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
   }
 
   Widget _buildMediaPlayer() {
-    if (_isPdfMode && _currentPdfPath != null) {
-      return _buildPdfViewer();
-    } else {
-      return _buildVideoPlayer();
-    }
+    return Stack(
+      children: [
+        _isPdfMode && _currentPdfPath != null
+            ? _buildPdfViewer()
+            : widget.course.imageUrl != null
+            ? _buildImageViewer()
+            : _buildVideoPlayer(),
+        if (_isPdfMode && _currentPdfPath != null)
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: IconButton(
+              icon: const Icon(
+                Icons.fullscreen,
+                color: Colors.black,
+                size: 30,
+              ),
+              onPressed: () => _toggleFullScreen(_currentPdfPath!, _currentPdfPath!.split('/').last, false),
+              tooltip: 'Enter Full Screen',
+            ),
+          ),
+        if (!_isPdfMode && widget.course.imageUrl != null)
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: IconButton(
+              icon: const Icon(
+                Icons.fullscreen,
+                color: Colors.black,
+                size: 30,
+              ),
+              onPressed: () => _toggleFullScreen(widget.course.imageUrl!, widget.course.name, true),
+              tooltip: 'Enter Full Screen',
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _buildPdfViewer() {
@@ -332,6 +440,33 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
             enableTextSelection: true,
             canShowScrollHead: true,
             canShowScrollStatus: true,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageViewer() {
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(
+            widget.course.imageUrl!,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey[300],
+                child: const Center(
+                  child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -418,7 +553,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
               leading: const Icon(Icons.slideshow, color: Colors.orange),
               title: Text(slide),
               onTap: () {
-                // Handle slide tap (e.g., open file)
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Opening $slide')),
                 );
@@ -434,7 +568,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen>
                     child: ElevatedButton.icon(
                       onPressed: _closePdf,
                       icon: const Icon(Icons.video_library),
-                      label: const Text('Back to Video'),
+                      label: Text(widget.course.imageUrl != null ? 'Back to Image' : 'Back to Video'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,

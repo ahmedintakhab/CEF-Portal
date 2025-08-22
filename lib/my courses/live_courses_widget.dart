@@ -317,6 +317,8 @@ class _LiveCoursesWidgetState extends State<LiveCoursesWidget> {
             validity: '', // Default value since not available in LiveCourseModel
             progress: 0.0, // Default value since not available in LiveCourseModel
             status: '', // Default value since not available in LiveCourseModel
+            imageUrl: course.imageUrl,
+
           ),
           onBack: () => Navigator.pop(context),
         ),
